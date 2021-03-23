@@ -1,21 +1,21 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 const markdownTable = require('markdown-table')
-const {deleteComment} = require('@aki77/actions-replace-comment')
-const replaceComment = require('@aki77/actions-replace-comment').default
+// const { deleteComment } = require('@aki77/actions-replace-comment')
+// const replaceComment = require('@aki77/actions-replace-comment').default
 
 function getExamples(results) {
   return getChildren(results, [])
 }
 
 function getChildren(input, output, filepath) {
-  Object.values(input).forEach(({tests, suites, file}) => {
+  Object.values(input).forEach(({ tests, suites, file }) => {
     if (file) {
       filepath = file
     }
 
     if (tests) {
-      tests.forEach(({fail, pending, skipped, fullTitle, err: {message}}) => {
+      tests.forEach(({ fail, pending, skipped, fullTitle, err: { message } }) => {
         if (fail || pending || skipped) {
           output.push({
             title: fullTitle,
@@ -38,7 +38,7 @@ function getChildren(input, output, filepath) {
 function getTable(examples) {
   return markdownTable([
     ['State', 'Description'],
-    ...examples.map(({state, filepath, title, message}) => [
+    ...examples.map(({ state, filepath, title, message }) => [
       state,
       `**Filepath**: ${filepath}<br>**Title**: ${title}<br>**Error**: ${message}`
     ])
@@ -74,31 +74,23 @@ const commentGeneralOptions = () => {
 }
 
 async function report(result) {
-  const title = core.getInput('title', {required: true})
-  const always = core.getInput('always', {required: true})
-  core.debug(title);
-  core.debug(always);
+  const title = core.getInput('title', { required: true })
 
-  if (!result.stats.failures && !always) {
-    await deleteComment({
+  try {
+    const res = await github.getOctokit().issues.createComment({
       ...commentGeneralOptions(),
-      body: title,
-      startsWith: true
-    })
-    return
+      body: `${title}
+        <details>
+        <summary>${getSummary(result.stats)}</summary>
+        ${getTable(getExamples(result.results))}
+        </details>
+        `,
+    });
+    core.info(res.status);
+    core.info(res.data);
+  } catch (err) {
+    core.error(err)
   }
-
-  await replaceComment({
-    ...commentGeneralOptions(),
-    body: `${title}
-<details>
-<summary>${getSummary(result.stats)}</summary>
-
-${getTable(getExamples(result.results))}
-
-</details>
-`
-  })
 }
 
 exports.getTable = getTable
