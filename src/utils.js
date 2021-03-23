@@ -1,7 +1,7 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 const markdownTable = require('markdown-table')
-// const { deleteComment } = require('@aki77/actions-replace-comment')
+const { createComment } = require('@aki77/actions-replace-comment')
 // const replaceComment = require('@aki77/actions-replace-comment').default
 
 function getExamples(results) {
@@ -79,7 +79,7 @@ async function report(result) {
   core.info(commentGeneralOptions());
 
   try {
-    const res = await github.getOctokit().issues.createComment({
+    const res = await createComment({
       ...commentGeneralOptions(),
       body: `${title}
         <details>
