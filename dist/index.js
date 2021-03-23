@@ -6330,6 +6330,8 @@ const commentGeneralOptions = () => {
 async function report(result) {
   const title = core.getInput('title', { required: true })
 
+  core.info(commentGeneralOptions());
+
   try {
     const res = await github.getOctokit().issues.createComment({
       ...commentGeneralOptions(),
@@ -6343,7 +6345,8 @@ async function report(result) {
     core.info(res.status);
     core.info(res.data);
   } catch (err) {
-    core.error(err)
+    core.error("Error here");
+    core.error(err);
   }
 }
 
