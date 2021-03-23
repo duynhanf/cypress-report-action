@@ -6348,8 +6348,6 @@ async function run() {
       pathname
     );
 
-    core.info(fullPathname);
-
     try {
       fs.accessSync(fullPathname, fs.constants.R_OK)
     } catch (err) {
@@ -6378,7 +6376,6 @@ const core = __nccwpck_require__(2186)
 const github = __nccwpck_require__(5438)
 const markdownTable = __nccwpck_require__(1062)
 const { createComment } = __nccwpck_require__(94)
-// const replaceComment = require('@aki77/actions-replace-comment').default
 
 function getExamples(results) {
   return getChildren(results, [])
@@ -6431,7 +6428,6 @@ function getSummary(stats) {
 
 function pullRequestId() {
   const pullRequestId = github.context.issue.number
-  core.info('pullRequestId : ', pullRequestId);
   if (!pullRequestId) {
     throw new Error('Cannot find the pull request ID.')
   }
@@ -6440,7 +6436,6 @@ function pullRequestId() {
 
 const commentGeneralOptions = () => {
   const token = core.getInput('token', { required: true });
-  core.debug('token');
   return {
     token: token,
     owner: github.context.repo.owner,
@@ -6450,26 +6445,16 @@ const commentGeneralOptions = () => {
 }
 
 async function report(result) {
-  const title = core.getInput('title', { required: true })
-
-  core.info(commentGeneralOptions());
-
-  try {
-    const res = await createComment({
-      ...commentGeneralOptions(),
-      body: `${title}
-        <details>
-        <summary>${getSummary(result.stats)}</summary>
-        ${getTable(getExamples(result.results))}
-        </details>
-        `,
-    });
-    core.info(res.status);
-    core.info(res.data);
-  } catch (err) {
-    core.error("Error here");
-    core.error(err);
-  }
+  const title = core.getInput('title', { required: true });
+  await createComment({
+    ...commentGeneralOptions(),
+    body: `${title}
+<details>
+<summary>${getSummary(result.stats)}</summary>
+${getTable(getExamples(result.results))}
+</details>
+`
+  });
 }
 
 exports.getTable = getTable

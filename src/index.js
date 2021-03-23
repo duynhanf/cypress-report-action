@@ -12,8 +12,6 @@ async function run() {
       pathname
     );
 
-    core.info(fullPathname);
-
     try {
       fs.accessSync(fullPathname, fs.constants.R_OK)
     } catch (err) {
